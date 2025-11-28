@@ -8,10 +8,25 @@ If Python and Arcade are installed, this example can be run from the command lin
 python -m arcade.examples.starting_template
 """
 import arcade
+import random
+import math
+from typing import List
 
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Starting Template"
+from constants import (
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    WINDOW_TITLE,
+    SPRITE_SHEET,
+    FRAME_WIDTH,
+    FRAME_HEIGHT,
+    FRAME_COUNT,
+)
+
+
+from entity.Player import Player, SPRITE_SCALING
+
+
+
 
 
 class GameView(arcade.View):
@@ -28,24 +43,63 @@ class GameView(arcade.View):
 
         self.background_color = arcade.color.AMAZON
 
+               # Variables that will hold sprite lists
+        self.player_list = None
+
+        # Set up the player info
+        self.player_sprite = None
+
+        # Track the current state of what key is pressed
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+
         # If you have sprite lists, you should create them here,
         # and set them to None
 
-    def reset(self):
-        """Reset the game to the initial state."""
-        # Do changes needed to restart the game here if you want to support that
-        pass
+
+    def setup(self):
+        """ Set up the game and initialize the variables. """
+
+        # Sprite lists
+        self.player_list = arcade.SpriteList()
+
+        # Set up the player
+        self.player_sprite = Player(
+            #SPRITE_SHEET,
+            #scale=SPRITE_SCALING,
+        )
+        self.player_sprite.center_x = 50
+        self.player_sprite.center_y = 50
+        self.player_list.append(self.player_sprite)
+
+
 
     def on_draw(self):
-        """
-        Render the screen.
-        """
+        """ Render the screen. """
 
-        # This command should happen before we start drawing. It will clear
-        # the screen to the background color, and erase what we drew last frame.
+        # Clear the screen
         self.clear()
 
-        # Call draw() on all your sprite lists below
+        # Draw all the sprites.
+        self.player_list.draw()
+
+    def update_player_speed(self):
+
+        # Calculate speed based on the keys pressed
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
+
+        if self.up_pressed and not self.down_pressed:
+            self.player_sprite.change_y = MOVEMENT_SPEED
+        elif self.down_pressed and not self.up_pressed:
+            self.player_sprite.change_y = -MOVEMENT_SPEED
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -MOVEMENT_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = MOVEMENT_SPEED
+
 
     def on_update(self, delta_time):
         """
@@ -53,7 +107,10 @@ class GameView(arcade.View):
         Normally, you'll call update() on the sprite lists that
         need it.
         """
-        pass
+        # Call update to move the sprite
+        # If using a physics engine, call update player to rely on physics engine
+        # for movement, and call physics engine here.
+        self.player_sprite.update_animation(delta_time)
 
     def on_key_press(self, key, key_modifiers):
         """
@@ -96,6 +153,7 @@ def main():
 
     # Create and setup the GameView
     game = GameView()
+    game.setup()
 
     # Show GameView on screen
     window.show_view(game)
